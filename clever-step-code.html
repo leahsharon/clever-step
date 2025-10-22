@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Clever Step</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary-blue: #00f0ff;
+      --primary-blue-dark: #00b3c6;
+      --primary-blue-light: #33f6ff;
+      --background-light: #0a192f;
+      --background-dark: #050d1a;
+      --container-light: rgba(10,25,47,0.7);
+      --container-dark: rgba(5,13,26,0.7);
+      --text-light: #e3e9f7;
+      --text-dark: #b3eaff;
+      --accent: #00ffe7;
+      --input-border: #33f6ff;
+      --shadow: 0 0 24px 0 #00f0ff44;
+    }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--background-light);
+      color: var(--text-light);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      transition: background 0.3s, color 0.3s;
+      overflow-x: hidden;
+    }
+    body.dark-mode {
+      background: var(--background-dark);
+      color: var(--text-dark);
+    }
+    nav {
+      width: 100%;
+      background: var(--primary-blue);
+      color: white;
+      padding: 10px 20px;
+      box-sizing: border-box;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: none;
+      justify-content: flex-end;
+      gap: 20px;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(25, 118, 210, 0.08);
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      cursor: pointer;
+      font-weight: bold;
+      transition: color 0.2s;
+    }
+    nav a:hover {
+      color: var(--accent);
+      text-decoration: underline;
+    }
+    .toggle-mode-btn {
+      background: var(--primary-blue-light);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      padding: 6px 18px;
+      font-size: 15px;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle-mode-btn:hover {
+      background: var(--primary-blue-dark);
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.18);
+      color: var(--text-light);
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px 0 rgba(25, 118, 210, 0.18);
+      width: 340px;
+      margin-top: 60px;
+      box-sizing: border-box;
+      transition: background 0.3s, color 0.3s;
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1.5px solid rgba(255,255,255,0.32);
+      border-top: 1.5px solid rgba(25,118,210,0.12);
+    }
+    body.dark-mode .container {
+      background: rgba(24, 42, 66, 0.32);
+      color: var(--text-dark);
+      border: 1.5px solid rgba(25,118,210,0.22);
+      border-top: 1.5px solid rgba(255,255,255,0.08);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--primary-blue);
+      transition: color 0.3s;
+    }
+    body.dark-mode h2 {
+      color: var(--primary-blue-light);
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid var(--input-border);
+      border-radius: 4px;
+      background: inherit;
+      color: inherit;
+      transition: border 0.2s, background 0.3s, color 0.3s;
+    }
+    input:focus {
+      border-color: var(--primary-blue);
+      outline: none;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: var(--primary-blue);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background-color: var(--primary-blue-dark);
+    }
+    .toggle-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+    .toggle-link a {
+      color: var(--primary-blue);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .toggle-link a:hover {
+      color: var(--accent);
+    }
+    .profile-pic {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary-blue);
+      display: block;
+      margin: 0 auto 15px;
+      background: #e3e9f7;
+    }
+    #welcome-container, #profile-container, #quiz-container {
+      display: none;
+      text-align: center;
+    }
+    .quiz-question {
+      text-align: left;
+      margin-bottom: 15px;
+    }
+    .quiz-question h4 {
+      margin-bottom: 8px;
+    }
+    .quiz-options label {
+      display: block;
+      margin-bottom: 5px;
+      cursor: pointer;
+    }
+    #quiz-results {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    /* Floating objects */
+    .floating-obj {
+      position: fixed;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.18;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary-blue-light), var(--primary-blue-dark));
+      animation: float-anim 12s linear infinite;
+    }
+    .floating-obj2 {
+      background: linear-gradient(135deg, var(--accent), var(--primary-blue));
+      animation-duration: 16s;
+    }
+    .floating-obj3 {
+      background: linear-gradient(135deg, #fff, var(--primary-blue-light));
+      animation-duration: 20s;
+    }
+    @keyframes float-anim {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+      50% {
+        transform: translateY(-60px) scale(1.08);
+      }
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
+    /* Landing / hero styles */
+    .landing-hero {
+      width: min(900px, 92vw);
+      padding: 48px 32px;
+      border-radius: 18px;
+      margin-top: 40px;
+      background: linear-gradient(180deg, rgba(0,240,255,0.06), rgba(0,179,198,0.03));
+      box-shadow: 0 14px 46px rgba(0,0,0,0.55);
+      text-align: center;
+      color: var(--text-light);
+      border: 1px solid rgba(0,240,255,0.06);
+    }
+    .hero-title {
+      font-size: 56px;
+      letter-spacing: 1px;
+      margin: 6px 0 12px 0;
+      color: var(--primary-blue-light);
+      text-shadow: 0 2px 18px rgba(0,240,255,0.18), 0 0 8px rgba(0,179,198,0.12);
+      font-weight: 800;
+    }
+    .hero-sub {
+      max-width: 760px;
+      margin: 0 auto 20px auto;
+      color: rgba(227,233,247,0.9);
+      line-height: 1.45;
+      font-size: 16px;
+    }
+    .hero-cta {
+      margin-top: 18px;
+      padding: 12px 26px;
+      background: linear-gradient(90deg,var(--primary-blue),var(--primary-blue-light));
+      border: none;
+      color: #001018;
+      font-weight: 700;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0,240,255,0.12);
+      font-size: 18px;
+    }
+    /* Chatbot styles */
+    .chatbot-container {
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      z-index: 1100;
+      font-family: inherit;
+    }
+    .chat-button {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg,var(--primary-blue-light),var(--primary-blue));
+      color: #001018;
+      box-shadow: 0 6px 18px rgba(0,240,255,0.16);
+      cursor: pointer;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .chat-panel {
+      width: 320px;
+      max-width: calc(100vw - 48px);
+      height: 420px;
+      margin-bottom: 12px;
+      border-radius: 12px;
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      background: rgba(10,20,40,0.6);
+      color: var(--text-light);
+      box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+      backdrop-filter: blur(12px) saturate(140%);
+      border: 1px solid rgba(51,255,255,0.08);
+      overflow: hidden;
+    }
+    .chat-panel.open { display: flex; }
+    .chat-header {
+      display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-bottom:1px solid rgba(255,255,255,0.03);font-weight:600;color:var(--primary-blue-light);
+    }
+    .chat-messages { flex:1; overflow:auto; padding:10px; display:flex; flex-direction:column; gap:8px; }
+    .chat-form { display:flex; gap:8px; padding:8px; border-top:1px solid rgba(255,255,255,0.02); }
+    .chat-form input { flex:1; padding:8px 10px; border-radius:8px; border:1px solid rgba(255,255,255,0.06); background:rgba(255,255,255,0.02); color:inherit; }
+    .chat-form button { min-width:44px; border-radius:8px; padding:6px 8px; }
+    .msg { max-width:78%; padding:8px 10px; border-radius:10px; line-height:1.2; }
+    .msg.user { align-self:flex-end; background: linear-gradient(90deg, rgba(0,240,255,0.12), rgba(0,179,198,0.12)); color:var(--text-light); }
+    .msg.bot { align-self:flex-start; background: rgba(255,255,255,0.04); color:var(--text-light); border:1px solid rgba(255,255,255,0.02); }
+    .typing { font-style:italic; opacity:0.8; }
+  </style>
+</head>
+<body>
+  <!-- Floating animated objects -->
+  <div class="floating-obj" style="width:120px;height:120px;left:5vw;top:10vh;"></div>
+  <div class="floating-obj floating-obj2" style="width:80px;height:80px;right:8vw;top:30vh;"></div>
+  <div class="floating-obj floating-obj3" style="width:60px;height:60px;left:20vw;bottom:12vh;"></div>
+  <div class="floating-obj floating-obj2" style="width:100px;height:100px;right:18vw;bottom:8vh;"></div>
+
+  <nav id="navbar">
+    <a id="profile-link">Profile</a>
+    <a id="logout-link">Logout</a>
+    <button class="toggle-mode-btn" id="toggle-mode-btn" title="Toggle dark/light mode">🌙</button>
+  </nav>
+
+  <div class="container" id="register-container">
+    <h2>Register</h2>
+    <form id="register-form">
+      <input type="text" id="register-name" placeholder="Full Name" required />
+      <input type="email" id="register-email" placeholder="Email" required />
+      <input type="password" id="register-password" placeholder="Password" required />
+      <input type="password" id="register-confirm-password" placeholder="Confirm Password" required />
+      <input type="url" id="register-pic-url" placeholder="Profile Picture URL (optional)" />
+      <button type="submit">Register</button>
+    </form>
+    <div class="toggle-link">Already have an account? <a id="to-login">Login here</a></div>
+  </div>
+
+  <!-- Landing hero (shown before register/login) -->
+  <div class="landing-hero" id="landing-hero">
+    <div class="hero-title">Clever Step</div>
+    <div class="hero-sub">Welcome to Clever Step — an educational micro-platform that helps you register, take skill quizzes, and track your learning. Explore science, technology, computing and arts quizzes tailored to your level. Finish your profile to get personalized recommendations.</div>
+    <button class="hero-cta" id="hero-welcome">Get Started</button>
+  </div>
+
+  <div class="container" id="login-container" style="display:none;">
+    <h2>Login</h2>
+    <form id="login-form">
+      <input type="email" id="login-email" placeholder="Email" required />
+      <input type="password" id="login-password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <div class="toggle-link">Don't have an account? <a id="to-register">Register here</a></div>
+  </div>
+
+  <div class="container" id="welcome-container">
+    <h2>Welcome, <span id="welcome-name"></span>!</h2>
+    <p id="welcome-msg">You are now logged in.</p>
+  </div>
+
+  <div class="container" id="profile-container">
+    <img id="profile-pic" class="profile-pic" src="" alt="Profile Picture" />
+    <h3 id="profile-name"></h3>
+    <p id="profile-email"></p>
+    <form id="profile-extra-form" style="margin:18px 0 10px 0;display:flex;flex-direction:column;gap:10px;">
+      <input type="number" id="profile-age" placeholder="Age" min="1" max="120" />
+      <input type="text" id="profile-grade" placeholder="Grade (e.g. 10th, College)" maxlength="32" />
+      <input type="tel" id="profile-phone" placeholder="Phone Number" maxlength="20" />
+      <button type="submit" style="width:auto;align-self:center;padding:6px 18px;">Save Profile</button>
+    </form>
+    <button id="analyze-btn">Analyze Your Skill</button>
+  </div>
+
+  <div class="container" id="quiz-container">
+    <h2>Hard-Level Quiz</h2>
+    <form id="quiz-form"></form>
+    <div id="quiz-results"></div>
+    <button id="quiz-back-btn" style="margin-top:10px;">Back to Profile</button>
+  </div>
+
+  <!-- Chatbot UI -->
+  <div class="chatbot-container" id="chatbot-container">
+    <div class="chat-panel" id="chat-panel" aria-hidden="true">
+      <div class="chat-header">
+        <div>Helper Bot</div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="chat-clear" title="Clear" style="background:none;border:none;color:var(--primary-blue-light);cursor:pointer;">🗑️</button>
+          <button id="chat-close" title="Close" style="background:none;border:none;color:var(--primary-blue-light);cursor:pointer;">✕</button>
+        </div>
+      </div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <form class="chat-form" id="chat-form">
+        <input id="chat-input" placeholder="Ask me about the site..." autocomplete="off" />
+        <button type="submit">➤</button>
+      </form>
+    </div>
+    <button class="chat-button" id="chat-toggle" aria-label="Open chat">💬</button>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const navbar = document.getElementById("navbar");
+      const welcomeContainer = document.getElementById("welcome-container");
+      const profileContainer = document.getElementById("profile-container");
+      const quizContainer = document.getElementById("quiz-container");
+      const registerContainer = document.getElementById("register-container");
+      const loginContainer = document.getElementById("login-container");
+      const toggleModeBtn = document.getElementById("toggle-mode-btn");
+
+      let users = JSON.parse(localStorage.getItem("users") || "[]");
+      let loggedInUser = null;
+
+      const defaultAvatar = "https://i.pravatar.cc/100";
+
+      // --- Dark/Light mode logic ---
+      function setMode(mode) {
+        if (mode === "dark") {
+          document.body.classList.add("dark-mode");
+          toggleModeBtn.textContent = "☀️";
+          toggleModeBtn.title = "Switch to light mode";
+        } else {
+          document.body.classList.remove("dark-mode");
+          toggleModeBtn.textContent = "🌙";
+          toggleModeBtn.title = "Switch to dark mode";
+        }
+        localStorage.setItem("theme-mode", mode);
+      }
+      function toggleMode() {
+        const isDark = document.body.classList.contains("dark-mode");
+        setMode(isDark ? "light" : "dark");
+      }
+      // On load, set mode from localStorage
+      setMode(localStorage.getItem("theme-mode") === "dark" ? "dark" : "light");
+      toggleModeBtn.addEventListener("click", toggleMode);
+
+      // --- App logic ---
+      function saveUsers() {
+        localStorage.setItem("users", JSON.stringify(users));
+      }
+
+      function showLogin() {
+        [registerContainer, welcomeContainer, profileContainer, quizContainer].forEach(c => c.style.display = "none");
+        loginContainer.style.display = "block";
+        navbar.style.display = "none";
+      }
+
+      function showRegister() {
+        [loginContainer, welcomeContainer, profileContainer, quizContainer].forEach(c => c.style.display = "none");
+        registerContainer.style.display = "block";
+        navbar.style.display = "none";
+      }
+      function showLanding() {
+        // hide other containers and show landing
+        [registerContainer, loginContainer, welcomeContainer, profileContainer, quizContainer].forEach(c => c.style.display = "none");
+        document.getElementById('landing-hero').style.display = 'block';
+        navbar.style.display = "none";
+      }
+
+      function showWelcome(user) {
+        document.getElementById("welcome-name").textContent = user.name;
+        [registerContainer, loginContainer, profileContainer, quizContainer].forEach(c => c.style.display = "none");
+        welcomeContainer.style.display = "block";
+        navbar.style.display = "flex";
+        // Check if profile is incomplete
+        let incomplete = !user.age || !user.grade || !user.phone;
+        const msg = incomplete
+          ? "<span style='color:var(--accent);font-weight:bold;'>Profile setup not complete!</span> <br>Click <b>Profile</b> in the top right to finish your profile."
+          : "You are now logged in.";
+        document.getElementById("welcome-msg").innerHTML = msg;
+      }
+
+      function showProfile() {
+        if (!loggedInUser) return;
+        [registerContainer, loginContainer, welcomeContainer, quizContainer].forEach(c => c.style.display = "none");
+
+        document.getElementById("profile-name").textContent = loggedInUser.name;
+        document.getElementById("profile-email").textContent = loggedInUser.email;
+        document.getElementById("profile-pic").src = loggedInUser.picUrl || defaultAvatar;
+
+        // Fill extra fields if present
+        document.getElementById("profile-age").value = loggedInUser.age || "";
+        document.getElementById("profile-grade").value = loggedInUser.grade || "";
+        document.getElementById("profile-phone").value = loggedInUser.phone || "";
+
+        profileContainer.style.display = "block";
+      }
+      // Save extra profile info
+      document.getElementById("profile-extra-form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        const age = document.getElementById("profile-age").value.trim();
+        const grade = document.getElementById("profile-grade").value.trim();
+        const phone = document.getElementById("profile-phone").value.trim();
+        if (!age || !grade || !phone) {
+          alert("Please fill in all profile fields.");
+          return;
+        }
+        loggedInUser.age = age;
+        loggedInUser.grade = grade;
+        loggedInUser.phone = phone;
+        // Update users array
+        users = users.map(u => u.email === loggedInUser.email ? loggedInUser : u);
+        saveUsers();
+        alert("Profile updated!");
+        showProfile();
+      });
+
+      function showQuiz() {
+        profileContainer.style.display = "none";
+        quizContainer.style.display = "block";
+
+        const quizLevels = {
+          beginner: [
+            { q: "What is H2O commonly known as?", options: ["Salt", "Water", "Oxygen", "Hydrogen"], answer: 1, category: "science" },
+            { q: "Which device is used to make phone calls?", options: ["Microscope", "Telephone", "Telescope", "Calculator"], answer: 1, category: "technology" },
+            { q: "Which is a programming language?", options: ["Python", "Snake", "Lion", "Tiger"], answer: 0, category: "computer" },
+            { q: "Which is a primary color?", options: ["Green", "Purple", "Blue", "Brown"], answer: 2, category: "arts" }
+          ],
+          mediocre: [
+            { q: "What planet is known as the Red Planet?", options: ["Earth", "Mars", "Jupiter", "Venus"], answer: 1, category: "science" },
+            { q: "What does CPU stand for?", options: ["Central Processing Unit", "Computer Personal Unit", "Central Power Unit", "Control Panel Utility"], answer: 0, category: "technology" },
+            { q: "What does HTML stand for?", options: ["Hyper Trainer Marking Language", "Hyper Text Markup Language", "Hyper Text Marketing Language", "Hyper Tool Markup Language"], answer: 1, category: "computer" },
+            { q: "Who painted the Mona Lisa?", options: ["Vincent Van Gogh", "Leonardo da Vinci", "Pablo Picasso", "Claude Monet"], answer: 1, category: "arts" }
+          ],
+          advanced: [
+            { q: "What is the chemical symbol for Gold?", options: ["Au", "Ag", "Gd", "Go"], answer: 0, category: "science" },
+            { q: "Which protocol is used for secure web browsing?", options: ["HTTP", "FTP", "SMTP", "HTTPS"], answer: 3, category: "technology" },
+            { q: "Which JavaScript feature allows functions to run asynchronously?", options: ["setTimeout()", "Promise", "for loop", "parseInt()"], answer: 1, category: "computer" },
+            { q: "What art movement is Salvador Dalí associated with?", options: ["Cubism", "Surrealism", "Impressionism", "Baroque"], answer: 1, category: "arts" }
+          ]
+        };
+
+        const quizForm = document.getElementById("quiz-form");
+        quizForm.innerHTML = "";
+        document.getElementById("quiz-results").innerHTML = "";
+
+        // Level selection UI
+        const levelDiv = document.createElement("div");
+        levelDiv.style.textAlign = "center";
+        levelDiv.style.marginBottom = "18px";
+        levelDiv.innerHTML = `
+          <label style='font-weight:bold;'>Select Level:</label>
+          <select id='quiz-level-select' style='margin-left:10px;padding:6px 12px;border-radius:6px;border:1px solid var(--primary-blue);background:inherit;color:inherit;'>
+            <option value='beginner'>Beginner</option>
+            <option value='mediocre'>Mediocre</option>
+            <option value='advanced'>Advanced</option>
+          </select>
+        `;
+        quizForm.appendChild(levelDiv);
+
+        let currentLevel = 'beginner';
+        let questions = quizLevels[currentLevel];
+
+        function renderQuestions() {
+          // Remove old questions
+          Array.from(quizForm.querySelectorAll('.quiz-question')).forEach(el => el.remove());
+          // Remove old submit button
+          const oldBtn = quizForm.querySelector('button[type="button"]');
+          if (oldBtn) oldBtn.remove();
+          // Render questions
+          questions.forEach((question, i) => {
+            const qDiv = document.createElement("div");
+            qDiv.className = "quiz-question";
+            const qTitle = document.createElement("h4");
+            qTitle.textContent = `Q${i+1}: ${question.q}`;
+            qDiv.appendChild(qTitle);
+            const opts = document.createElement("div");
+            opts.className = "quiz-options";
+            question.options.forEach((opt, idx) => {
+              const label = document.createElement("label");
+              const input = document.createElement("input");
+              input.type = "radio";
+              input.name = `q${i}`;
+              input.value = idx;
+              label.appendChild(input);
+              label.append(" " + opt);
+              opts.appendChild(label);
+            });
+            qDiv.appendChild(opts);
+            quizForm.appendChild(qDiv);
+          });
+          // Add submit button
+          const submitBtn = document.createElement("button");
+          submitBtn.type = "button";
+          submitBtn.textContent = "Submit Quiz";
+          submitBtn.onclick = function () {
+            let score = 0;
+            let categoryScores = { science: 0, technology: 0, computer: 0, arts: 0 };
+            questions.forEach((q, i) => {
+              const selected = document.querySelector(`input[name=\"q${i}\"]:checked`);
+              if (selected && parseInt(selected.value) === q.answer) {
+                score++;
+                categoryScores[q.category]++;
+              }
+            });
+            // Display results by category
+            let resultHtml = `<div style='margin-bottom:10px;font-size:1.1em;'>You scored <b>${score}</b> out of <b>${questions.length}</b></div>`;
+            resultHtml += `<div style='margin-bottom:8px;font-weight:bold;'>Skill Breakdown:</div>`;
+            resultHtml += `<ul style='text-align:left;max-width:220px;margin:0 auto 10px auto;padding-left:18px;'>`;
+            Object.entries(categoryScores).forEach(([cat, val]) => {
+              let label = cat.charAt(0).toUpperCase() + cat.slice(1);
+              resultHtml += `<li><span style='color:var(--primary-blue);font-weight:bold;'>${label}:</span> ${val} / 1</li>`;
+            });
+            resultHtml += `</ul>`;
+            // Skill summary
+            let topCat = Object.entries(categoryScores).sort((a,b)=>b[1]-a[1])[0][0];
+            let skillMsg = {
+              science: "You have a knack for science!",
+              technology: "You shine in technology!",
+              computer: "Computers are your strong suit!",
+              arts: "You have an artistic side!"
+            };
+            resultHtml += `<div style='margin-top:8px;color:var(--accent);font-weight:bold;'>${skillMsg[topCat]}</div>`;
+            document.getElementById("quiz-results").innerHTML = resultHtml;
+          };
+          quizForm.appendChild(submitBtn);
+        }
+
+        // Initial render
+        renderQuestions();
+
+        // Level change event
+        quizForm.querySelector('#quiz-level-select').addEventListener('change', function(e) {
+          currentLevel = e.target.value;
+          questions = quizLevels[currentLevel];
+          document.getElementById("quiz-results").innerHTML = "";
+          renderQuestions();
+        });
+      }
+
+      // Event Listeners
+      document.getElementById("register-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const name = document.getElementById("register-name").value.trim();
+        const email = document.getElementById("register-email").value.trim();
+        const password = document.getElementById("register-password").value;
+        const confirmPassword = document.getElementById("register-confirm-password").value;
+        const picUrl = document.getElementById("register-pic-url").value.trim();
+
+        if (password !== confirmPassword) return alert("Passwords do not match.");
+
+        if (users.find(u => u.email === email)) return alert("User already exists.");
+
+        const newUser = { name, email, password, picUrl };
+        users.push(newUser);
+        saveUsers();
+        alert("Registered successfully. Please login.");
+        this.reset();
+        showLogin();
+      });
+
+      document.getElementById("login-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const email = document.getElementById("login-email").value.trim();
+        const password = document.getElementById("login-password").value.trim();
+
+        const user = users.find(u => u.email === email && u.password === password);
+        if (!user) return alert("Invalid credentials.");
+
+        loggedInUser = user;
+        this.reset();
+        showWelcome(user);
+      });
+
+      document.getElementById("logout-link").addEventListener("click", function () {
+        loggedInUser = null;
+        showLogin();
+      });
+
+      document.getElementById("profile-link").addEventListener("click", showProfile);
+      document.getElementById("analyze-btn").addEventListener("click", showQuiz);
+      document.getElementById("quiz-back-btn").addEventListener("click", showProfile);
+      document.getElementById("to-login").addEventListener("click", showLogin);
+      document.getElementById("to-register").addEventListener("click", showRegister);
+
+      // Initial load: show landing
+      showLanding();
+
+      // Hero button wiring
+      document.getElementById('hero-welcome').addEventListener('click', function(){
+        document.getElementById('landing-hero').style.display = 'none';
+        showLogin();
+      });
+
+      // --- Chatbot logic ---
+  const chatToggle = document.getElementById('chat-toggle');
+  const chatPanel = document.getElementById('chat-panel');
+  const chatClose = document.getElementById('chat-close');
+  const chatClear = document.getElementById('chat-clear');
+  const chatForm = document.getElementById('chat-form');
+  const chatInput = document.getElementById('chat-input');
+  const chatMessages = document.getElementById('chat-messages');
+
+      function openChat() {
+        chatPanel.classList.add('open');
+        chatPanel.setAttribute('aria-hidden','false');
+        chatInput.focus();
+      }
+      function closeChat() {
+        chatPanel.classList.remove('open');
+        chatPanel.setAttribute('aria-hidden','true');
+        chatToggle.focus();
+      }
+      chatToggle.addEventListener('click', openChat);
+      chatClose.addEventListener('click', closeChat);
+
+      function timeNow(){
+        const d = new Date();
+        return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+      }
+      function appendMessage(text, who='bot', save=true){
+        const d = document.createElement('div');
+        d.className = `msg ${who}`;
+        const content = document.createElement('div');
+        content.textContent = text;
+        const ts = document.createElement('div');
+        ts.style.fontSize='11px'; ts.style.opacity='0.7'; ts.style.marginTop='6px'; ts.textContent = timeNow();
+        d.appendChild(content);
+        d.appendChild(ts);
+        chatMessages.appendChild(d);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        if (save) saveChatToStorage();
+      }
+
+      function saveChatToStorage(){
+        const items = Array.from(chatMessages.querySelectorAll('.msg')).map(node=>{
+          return { who: node.classList.contains('user')? 'user':'bot', text: node.firstChild.textContent, time: node.lastChild.textContent };
+        });
+        localStorage.setItem('clever_chat_history', JSON.stringify(items));
+      }
+      function loadChatFromStorage(){
+        const raw = localStorage.getItem('clever_chat_history');
+        if (!raw) return;
+        try{
+          const items = JSON.parse(raw);
+          items.forEach(it=>{
+            appendMessage(it.text, it.who, false);
+          });
+        }catch(e){ console.warn('chat load fail', e); }
+      }
+
+      function botRespond(userText){
+        const t = userText.toLowerCase();
+        if (!t) return appendMessage("Please type something.");
+        // greetings
+        if (/(^|\s)(hi|hello|hey)($|\s)/.test(t)) return appendMessage('Hi there! I can guide you to: profile, quiz, or theme toggling.');
+        if (t.includes('profile')) return appendMessage('Open Profile (top-right) to edit your age, grade and phone.');
+        if (t.includes('quiz')) return appendMessage('From Profile click "Analyze Your Skill" to start quizzes at your chosen level.');
+        if (t.includes('dark')||t.includes('light')||t.includes('mode')){ toggleMode(); return appendMessage('Theme switched.'); }
+        if (t.includes('clear chat')||t.includes('delete chat')||t.includes('reset chat')){
+          clearChat();
+          return appendMessage('Chat cleared.');
+        }
+        if (t.includes('help')||t.includes('how')) return appendMessage('Register or Login, then complete your profile and click Analyze Your Skill.');
+        // fallback with suggestion
+        return appendMessage("I'm not sure — try: 'profile', 'quiz', 'dark mode', or 'clear chat'.");
+      }
+
+      chatForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const val = chatInput.value.trim();
+        if (!val) return;
+        appendMessage(val,'user');
+        chatInput.value = '';
+        // show typing indicator
+        const typing = document.createElement('div');
+        typing.className = 'msg bot typing';
+        typing.textContent = '...';
+        chatMessages.appendChild(typing);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        setTimeout(()=>{
+          typing.remove();
+          botRespond(val);
+        }, 800 + Math.min(val.length*20, 800));
+      });
+      // Enter to send (while focused in input) - already handled by form submit,
+      // Add clear handler & load existing history
+      function clearChat(){
+        chatMessages.innerHTML = '';
+        localStorage.removeItem('clever_chat_history');
+      }
+      chatClear.addEventListener('click', function(){ clearChat(); appendMessage('Chat cleared.'); });
+      loadChatFromStorage();
+    });
+  </script>
+</body>
+</html>
